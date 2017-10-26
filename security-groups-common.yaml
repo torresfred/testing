@@ -1,0 +1,2937 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Template to Create Common Security Groups used by all Pillars
+Mappings: 
+  PrefixListIdMap: 
+    us-east-1: 
+      "s3" : "pl-63a5400a"
+    us-east-2: 
+      "s3" : "pl-7ba54012"
+    us-west-1: 
+      "s3" : "pl-6ba54002"
+    us-west-2: 
+      "s3" : "pl-68a54001"
+    sa-east-1: 
+      "s3" : "pl-6aa54003"
+    ca-central-1: 
+      "s3" : "pl-7ba54012"
+    eu-central-1: 
+      "s3" : "pl-6ea54007"
+    eu-west-1: 
+      "s3" : "pl-6da54004"
+    eu-west-2: 
+      "s3" : "pl-6ba54002"
+    ap-south-1: 
+      "s3" : "pl-78a54011"
+    ap-northeast-1: 
+      "s3" : "pl-61a54008"
+    ap-northeast-2: 
+      "s3" : "pl-78a54011"
+    ap-southeast-1: 
+      "s3" : "pl-6fa54006"
+    ap-southeast-2: 
+      "s3" : "pl-6ca54005"
+      
+Parameters:
+    ClientName:
+     Description: >- 
+        Enter 3 character client code in lower case
+     Type: String
+    VPC:
+     Description: >- 
+        Enter VPC ID in which you want to create these security groups
+     Type: AWS::EC2::VPC::Id
+    VPCCIDR:
+     Description: >- 
+        Enter just the CIDR Block of the VPC displayed in the VPC value . For ex: 10.10.0.0/16
+     Type: String
+    CMSConnectivity:
+     Description: >-
+      Select whether this client will need connectivity from CMS or not 
+     Type: String
+     Default: NotRequired
+     AllowedValues:
+      - NotRequired
+      - Required
+Conditions:
+  CMSConnection: !Equals 
+    - !Ref CMSConnectivity
+    - Required
+  NoCMSConnection: !Equals 
+    - !Ref CMSConnectivity
+    - NotRequired
+
+Resources:
+  sgpsdc:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for domain controller
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_dc ] ]
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_dc ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: all
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: windows       
+  sgpssharedawslinux:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for common AWS resources used by all PS Linux servers
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_shared_aws_linux ] ]
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_shared_aws_linux ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: all
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux        
+  sgpsscriptslinux:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for scripts mount point
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_scripts_linux ] ]
+      VpcId:
+        Ref: VPC
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 127.0.0.1/32
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_scripts_linux ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: all
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux        
+  sgpssharedawswindows:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for common AWS resources used by all PS windows servers
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_shared_aws_windows] ]
+      VpcId:
+        Ref: VPC
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 111.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 13.96.0.0/13
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 132.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 157.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 207.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 213.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 52.94.0.0/16
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 54.224.0.0/11
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 65.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 68.142.118.0/24
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 70.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 94.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 111.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 13.96.0.0/13
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 132.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 157.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 207.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 213.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 52.94.0.0/16
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 54.224.0.0/11
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 65.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 68.142.118.0/24
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 70.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 94.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 54.239.0.0/16        
+      - IpProtocol: tcp
+        FromPort: '25'
+        ToPort: '25'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '465'
+        ToPort: '465'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '587'
+        ToPort: '587'
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_shared_aws_windows] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: all
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: windows
+  sgpssharedcmslinux:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for common CMS resources used by all PS linux servers
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_shared_cms_linux ] ]
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '41002'
+        ToPort: '41002'
+        CidrIp: 172.25.78.23/32
+      - IpProtocol: tcp
+        FromPort: '41002'
+        ToPort: '41002'
+        CidrIp: 172.25.78.24/32
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 172.25.86.18/32
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 172.25.78.24/32
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 172.25.86.17/32
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 172.25.78.23/32 
+      - IpProtocol: tcp
+        FromPort: '8089'
+        ToPort: '8089'
+        CidrIp: 172.25.22.251/32
+      - IpProtocol: tcp
+        FromPort: '8089'
+        ToPort: '8089'
+        CidrIp: 172.24.22.228/32
+      - IpProtocol: tcp
+        FromPort: '8089'
+        ToPort: '8089'
+        CidrIp: 172.25.86.16/32
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: '41002'
+        ToPort: '41002'
+        CidrIp: 172.25.78.23/32
+      - IpProtocol: tcp
+        FromPort: '41002'
+        ToPort: '41002'
+        CidrIp: 172.25.78.24/32
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 172.25.86.18/32
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 172.25.78.24/32
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 172.25.86.17/32
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 172.25.78.23/32
+      - IpProtocol: tcp
+        FromPort: '9997'
+        ToPort: '9997'
+        CidrIp: 172.25.86.0/24
+      - IpProtocol: udp
+        FromPort: '53'
+        ToPort: '53'
+        CidrIp: 172.25.18.0/24
+      - IpProtocol: udp
+        FromPort: '53'
+        ToPort: '53'
+        CidrIp: 172.25.19.0/24
+      - IpProtocol: udp
+        FromPort: '53'
+        ToPort: '53'
+        CidrIp: 172.23.1.0/24
+      - IpProtocol: tcp
+        FromPort: '389'
+        ToPort: '389'
+        CidrIp: 172.25.18.0/24
+      - IpProtocol: tcp
+        FromPort: '389'
+        ToPort: '389'
+        CidrIp: 172.25.19.0/24
+      - IpProtocol: tcp
+        FromPort: '389'
+        ToPort: '389'
+        CidrIp: 172.23.1.0/24
+      - IpProtocol: tcp
+        FromPort: '636'
+        ToPort: '636'
+        CidrIp: 172.25.18.0/24
+      - IpProtocol: tcp
+        FromPort: '636'
+        ToPort: '636'
+        CidrIp: 172.25.19.0/24
+      - IpProtocol: tcp
+        FromPort: '636'
+        ToPort: '636'
+        CidrIp: 172.23.1.0/24
+      - IpProtocol: tcp
+        FromPort: '25'
+        ToPort: '25'
+        CidrIp: 172.25.13.0/24
+      - IpProtocol: tcp
+        FromPort: '25'
+        ToPort: '25'
+        CidrIp: 172.23.13.0/24
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_shared_cms_linux] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: all
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux        
+  sgpssharedcmswindows:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for common CMS resources used by all PS windows servers
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_shared_cms_windows] ]
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '41002'
+        ToPort: '41002'
+        CidrIp: 172.25.78.23/32
+      - IpProtocol: tcp
+        FromPort: '41002'
+        ToPort: '41002'
+        CidrIp: 172.25.78.24/32
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 172.25.86.18/32
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 172.25.78.24/32
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 172.25.86.17/32
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 172.25.78.23/32 
+      - IpProtocol: tcp
+        FromPort: '3389'
+        ToPort: '3389'
+        CidrIp: 172.24.96.0/21
+      - IpProtocol: tcp
+        FromPort: '3389'
+        ToPort: '3389'
+        CidrIp: 172.23.96.0/21
+      - IpProtocol: tcp
+        FromPort: '8089'
+        ToPort: '8089'
+        CidrIp: 172.25.22.251/32
+      - IpProtocol: tcp
+        FromPort: '8089'
+        ToPort: '8089'
+        CidrIp: 172.24.22.228/32
+      - IpProtocol: tcp
+        FromPort: '8089'
+        ToPort: '8089'
+        CidrIp: 172.25.86.16/32
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: '41002'
+        ToPort: '41002'
+        CidrIp: 172.25.78.23/32
+      - IpProtocol: tcp
+        FromPort: '41002'
+        ToPort: '41002'
+        CidrIp: 172.25.78.24/32
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 172.25.86.18/32
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 172.25.78.24/32
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 172.25.86.17/32
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 172.25.78.23/32
+      - IpProtocol: tcp
+        FromPort: '9997'
+        ToPort: '9997'
+        CidrIp: 172.25.86.0/24
+      - IpProtocol: udp
+        FromPort: '53'
+        ToPort: '53'
+        CidrIp: 172.25.18.0/24
+      - IpProtocol: udp
+        FromPort: '53'
+        ToPort: '53'
+        CidrIp: 172.25.19.0/24
+      - IpProtocol: udp
+        FromPort: '53'
+        ToPort: '53'
+        CidrIp: 172.23.1.0/24
+      - IpProtocol: tcp
+        FromPort: '88'
+        ToPort: '88'
+        CidrIp: 172.25.18.0/24
+      - IpProtocol: tcp
+        FromPort: '88'
+        ToPort: '88'
+        CidrIp: 172.25.19.0/24
+      - IpProtocol: tcp
+        FromPort: '88'
+        ToPort: '88'
+        CidrIp: 172.23.1.0/24
+      - IpProtocol: tcp
+        FromPort: '389'
+        ToPort: '389'
+        CidrIp: 172.25.18.0/24
+      - IpProtocol: tcp
+        FromPort: '389'
+        ToPort: '389'
+        CidrIp: 172.25.19.0/24
+      - IpProtocol: tcp
+        FromPort: '389'
+        ToPort: '389'
+        CidrIp: 172.23.1.0/24
+      - IpProtocol: tcp
+        FromPort: '636'
+        ToPort: '636'
+        CidrIp: 172.25.18.0/24
+      - IpProtocol: tcp
+        FromPort: '636'
+        ToPort: '636'
+        CidrIp: 172.25.19.0/24
+      - IpProtocol: tcp
+        FromPort: '636'
+        ToPort: '636'
+        CidrIp: 172.23.1.0/24
+      - IpProtocol: tcp
+        FromPort: '3268'
+        ToPort: '3269'
+        CidrIp: 172.25.18.0/24
+      - IpProtocol: tcp
+        FromPort: '3268'
+        ToPort: '3269'
+        CidrIp: 172.25.19.0/24
+      - IpProtocol: tcp
+        FromPort: '3268'
+        ToPort: '3269'
+        CidrIp: 172.23.1.0/24
+      - IpProtocol: tcp
+        FromPort: '9389'
+        ToPort: '9389'
+        CidrIp: 172.25.18.0/24
+      - IpProtocol: tcp
+        FromPort: '9389'
+        ToPort: '9389'
+        CidrIp: 172.25.19.0/24
+      - IpProtocol: tcp
+        FromPort: '9389'
+        ToPort: '9389'
+        CidrIp: 172.23.1.0/24
+      - IpProtocol: tcp
+        FromPort: '49154'
+        ToPort: '49159'
+        CidrIp: 172.25.18.0/24
+      - IpProtocol: tcp
+        FromPort: '49154'
+        ToPort: '49159'
+        CidrIp: 172.25.19.0/24
+      - IpProtocol: tcp
+        FromPort: '49154'
+        ToPort: '49159'
+        CidrIp: 172.23.1.0/24
+      - IpProtocol: tcp
+        FromPort: '25'
+        ToPort: '25'
+        CidrIp: 172.25.13.0/24
+      - IpProtocol: tcp
+        FromPort: '25'
+        ToPort: '25'
+        CidrIp: 172.23.13.0/24
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_shared_cms_windows] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: all
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: windows        
+  sgpsadminnprdlinux:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for linux nprd admin server
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_admin_nprd_linux] ]
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_admin_nprd_linux] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: nprd
+      - Key: env
+        Value: nprd
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux        
+  sgpsadminprodlinux:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for linux prod admin server
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_admin_prod_linux] ]
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_admin_prod_linux] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: prod
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux        
+  sgpsadminwindows:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for windows admin server
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_admin_windows] ]
+      VpcId:
+        Ref: VPC
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 127.0.0.1/32
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_admin_windows] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: prod
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: windows        
+  sgpsts:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for terminal servers
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_ts ] ]
+      VpcId:
+        Ref: VPC
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 127.0.0.1/32
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_ts ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: all
+      - Key: env
+        Value: prod
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: windows        
+  sgpshomedirslinux:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for home directories of Linux users
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_homedirs_linux ] ]
+      VpcId:
+        Ref: VPC
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 127.0.0.1/32
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_homedirs_linux ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: all
+      - Key: env
+        Value: prod
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux        
+  sgpsinstallmedialinux:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for install media mount
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_install_media_linux ] ]
+      VpcId:
+        Ref: VPC
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 127.0.0.1/32
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_install_media_linux ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: prod
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: sg
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux
+  sgpsinstallmediawindows:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for PS install media share for windows
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_install_media_windows ] ]
+      VpcId:
+        Ref: VPC
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 127.0.0.1/32
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_install_media_windows ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: all
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all  
+      - Key: os
+        Value: windows        
+  sgpssftpnprd:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for nprd sftp server
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_sftp_nprd ] ]
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_sftp_nprd ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: nprd
+      - Key: env
+        Value: nprd
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux        
+  sgpssftpprod:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for prod sftp server
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_sftp_prod ] ]
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_sftp_prod ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: prod
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all 
+      - Key: os
+        Value: linux
+  sgpsapptoolsnprdlinux:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for nprd app and tools home mount for Linux
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_apptools_nprd_linux ] ]
+      VpcId:
+        Ref: VPC
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 127.0.0.1/32
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_apptools_nprd_linux ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: nprd
+      - Key: env
+        Value: nprd
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux        
+  sgpsapptoolsprodlinux:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for prod app and tools home mount for Linux
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_apptools_prod_linux ] ]
+      VpcId:
+        Ref: VPC
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 127.0.0.1/32
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_apptools_prod_linux ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: prod
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux        
+  sgpsapptoolsnprdwindows:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for nprd app and tools home share for windows
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_apptools_nprd_windows ] ]
+      VpcId:
+        Ref: VPC
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 127.0.0.1/32
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_apptools_nprd_windows ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: nprd
+      - Key: env
+        Value: nprd
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: windows        
+  sgpsapptoolsprodwindows:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for prod app and tools home share for windows
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_apptools_prod_windows ] ]
+      VpcId:
+        Ref: VPC
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 127.0.0.1/32
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_apptools_prod_windows ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: prod
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: all
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: windows        
+  sgpswebgatewaynprd:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for nprd Gateway Web Server
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_web_gateway_nprd ] ]
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_web_gateway_nprd ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: nprd
+      - Key: env
+        Value: nprd
+      - Key: service
+        Value: gateway
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux        
+  sgpslbprivategatewaynprd:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for nprd Internal Gateway
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_lb_private_gateway_nprd ] ]
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_lb_private_gateway_nprd ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: nprd
+      - Key: env
+        Value: nprd
+      - Key: service
+        Value: elb
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux
+  sgpslbpublicgatewaynprd:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for nprd External Gateway
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_lb_public_gateway_nprd ] ]
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_lb_public_gateway_nprd ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: nprd
+      - Key: env
+        Value: nprd
+      - Key: service
+        Value: elb
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux        
+  sgpswebgatewayprod:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for prod Gateway Web Server
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_web_gateway_prod ] ]
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_web_gateway_prod ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: prod
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: gateway
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux        
+  sgpslbprivategatewayprod:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for prod Internal Gateway
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_lb_private_gateway_prod ] ]
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_lb_private_gateway_prod ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: prod
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: elb
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux        
+  sgpslbpublicgatewayprod:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for prod External Gateway
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_lb_public_gateway_prod ] ]
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_lb_public_gateway_prod ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: prod
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: elb
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux        
+  sgpsesnprd:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for nprd SES/ES
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_es_nprd ] ]
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_es_nprd ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: nprd
+      - Key: env
+        Value: nprd
+      - Key: service
+        Value: es
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux        
+  sgpslbprivateesnprd:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for nprd SES/ES Load Balancer
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_lb_private_es_nprd ] ]
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_lb_private_es_nprd ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: nprd
+      - Key: env
+        Value: nprd
+      - Key: service
+        Value: elb
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux        
+  sgpsesprod:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for prod SES/ES
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_es_prod ] ]
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_es_prod ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: prod
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: es
+      - Key: pillar
+        Value: all
+      - Key: os
+        Value: linux
+  sgpslbprivateesprod:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: sg for prod SES/ES Load Balancer
+      GroupName: !Join [ "_",[ !Ref ClientName, ps_lb_private_es_prod ] ]
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: !Join [ "_",[ !Ref ClientName, ps_lb_private_es_prod ] ]
+      - Key: client
+        Value: !Ref ClientName
+      - Key: type
+        Value: prod
+      - Key: env
+        Value: prd
+      - Key: service
+        Value: elb
+      - Key: pillar
+        Value: all 
+      - Key: os
+        Value: linux
+        
+  sgpsdcingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: udp
+      FromPort: '464'
+      ToPort: '464'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsdcingress2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '464'
+      ToPort: '464'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsdcingress3:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: udp
+      FromPort: '135'
+      ToPort: '139'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsdcingress4:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: udp
+      FromPort: '389'
+      ToPort: '389'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsdcingress5:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: udp
+      FromPort: '389'
+      ToPort: '389'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawslinux
+  sgpsdcingress6:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: udp
+      FromPort: '53'
+      ToPort: '53'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsdcingress7:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: udp
+      FromPort: '53'
+      ToPort: '53'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawslinux
+  sgpsdcingress9:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '3389'
+      ToPort: '3389'
+      SourceSecurityGroupId:
+        Ref: sgpsts
+  sgpsdcingress10:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '445'
+      ToPort: '445'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsdcingress11:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsdcingress12:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '9389'
+      ToPort: '9389'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsdcingress13:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '3268'
+      ToPort: '3269'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsdcingress14:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '135'
+      ToPort: '139'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsdcingress15:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '636'
+      ToPort: '636'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsdcingress16:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '636'
+      ToPort: '636'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawslinux
+  sgpsdcingress17:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '53'
+      ToPort: '53'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsdcingress18:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: udp
+      FromPort: '88'
+      ToPort: '88'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsdcingress19:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: udp
+      FromPort: '53'
+      ToPort: '53'
+      CidrIp: 8.8.4.4/32
+  sgpsdcingress20:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: udp
+      FromPort: '53'
+      ToPort: '53'
+      CidrIp: 8.8.8.8/32
+  sgpsdcingress21:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '53'
+      ToPort: '53'
+      CidrIp: 8.8.4.4/32
+  sgpsdcingress22:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '53'
+      ToPort: '53'
+      CidrIp: 8.8.8.8/32
+  sgpsdcingress23:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '3389'
+      ToPort: '3389'
+      CidrIp: 172.23.96.0/21
+  sgpsdcingress24:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '3389'
+      ToPort: '3389'
+      CidrIp: 172.24.96.0/21
+  sgpsdcingress25:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '445'
+      ToPort: '445'
+      CidrIp: 172.25.18.0/23
+  sgpsdcingress26:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 172.25.78.23/32
+  sgpsdcingress27:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 172.25.78.24/32
+  sgpsdcingress28:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 172.25.86.17/32
+  sgpsdcingress29:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 172.25.86.18/32
+  sgpsdcingress30:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: "-1"
+      CidrIp: 172.23.1.50/32
+  sgpsdcingress31:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: "-1"
+      CidrIp: 172.23.1.51/32
+  sgpsdcingress32:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: "-1"
+      CidrIp: 172.25.18.167/32
+  sgpsdcingress33:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: "-1"
+      CidrIp: 172.25.18.51/32
+  sgpsdcingress34:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: "-1"
+      CidrIp: 172.25.18.64/32
+  sgpsdcingress35:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: "-1"
+      CidrIp: 172.25.19.151/32
+  sgpsdcingress36:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: "-1"
+      CidrIp: 172.25.19.177/32
+  sgpsdcingress37:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: "-1"
+      CidrIp: 172.25.19.186/32
+  sgpsdcingress38:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '8089'
+      ToPort: '8089'
+      CidrIp: 172.24.22.228/32
+  sgpsdcingress39:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '8089'
+      ToPort: '8089'
+      CidrIp: 172.25.22.251/32
+  sgpsdcingress40:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '8089'
+      ToPort: '8089'
+      CidrIp: 172.25.86.16/32
+  sgpsdcingress41:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '41002'
+      ToPort: '41002'
+      CidrIp: 172.25.78.23/32
+  sgpsdcingress42:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '41002'
+      ToPort: '41002'
+      CidrIp: 172.25.78.24/32
+  sgpsdcingress43:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '53'
+      ToPort: '53'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawslinux
+  sgpsdcegress1:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 54.239.16.0/20
+  sgpsdcegress2:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: udp
+      FromPort: '53'
+      ToPort: '53'
+      DestinationSecurityGroupId:
+        Ref: sgpssharedawslinux
+  sgpsdcegress3:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: udp
+      FromPort: '53'
+      ToPort: '53'
+      DestinationSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsdcegress4:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: udp
+      FromPort: '53'
+      ToPort: '53'
+      CidrIp: 205.251.196.95/32
+  sgpsdcegress5:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: udp
+      FromPort: '53'
+      ToPort: '53'
+      CidrIp: 8.8.4.4/32
+  sgpsdcegress6:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: udp
+      FromPort: '53'
+      ToPort: '53'
+      CidrIp: 8.8.8.8/32
+  sgpsdcegress7:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '53'
+      ToPort: '53'
+      DestinationSecurityGroupId:
+        Ref: sgpssharedawslinux
+  sgpsdcegress8:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '53'
+      ToPort: '53'
+      DestinationSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsdcegress9:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '53'
+      ToPort: '53'
+      CidrIp: 205.251.196.95/32
+  sgpsdcegress10:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '53'
+      ToPort: '53'
+      CidrIp: 8.8.4.4/32
+  sgpsdcegress11:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '53'
+      ToPort: '53'
+      CidrIp: 8.8.8.8/32
+  sgpsdcegress12:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '445'
+      ToPort: '445'
+      CidrIp: !Ref VPCCIDR
+  sgpsdcegress13:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 172.25.78.23/32
+  sgpsdcegress14:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 172.25.78.24/32
+  sgpsdcegress15:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 172.25.86.17/32
+  sgpsdcegress16:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 172.25.86.18/32
+  sgpsdcegress17:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: "-1"
+      CidrIp: 172.23.1.50/32
+  sgpsdcegress18:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: "-1"
+      CidrIp: 172.23.1.51/32
+  sgpsdcegress19:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: "-1"
+      CidrIp: 172.25.18.167/32
+  sgpsdcegress20:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: "-1"
+      CidrIp: 172.25.18.51/32
+  sgpsdcegress21:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: "-1"
+      CidrIp: 172.25.18.64/32
+  sgpsdcegress22:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: "-1"
+      CidrIp: 172.25.19.151/32
+  sgpsdcegress23:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: "-1"
+      CidrIp: 172.25.19.177/32
+  sgpsdcegress24:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: "-1"
+      CidrIp: 172.25.19.186/32
+  sgpsdcegress25:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '8089'
+      ToPort: '8089'
+      CidrIp: 172.24.22.228/32
+  sgpsdcegress26:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '8089'
+      ToPort: '8089'
+      CidrIp: 172.25.22.251/32
+  sgpsdcegress27:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '8089'
+      ToPort: '8089'
+      CidrIp: 172.25.86.16/32
+  sgpsdcegress28:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '41002'
+      ToPort: '41002'
+      CidrIp: 172.25.78.23/32
+  sgpsdcegress29:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '41002'
+      ToPort: '41002'
+      CidrIp: 172.25.78.24/32
+  sgpsdcegress30:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '9997'
+      ToPort: '9997'
+      CidrIp: 172.25.86.0/24
+  sgpsdcegress31:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '389'
+      ToPort: '389'
+      CidrIp: !Ref VPCCIDR
+  sgpsdcegress32:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: udp
+      FromPort: '389'
+      ToPort: '389'
+      CidrIp: !Ref VPCCIDR
+  sgpsdcegress33:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: udp
+      FromPort: '389'
+      ToPort: '389'
+      CidrIp: !Ref VPCCIDR
+  sgpsdcegress34:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsdc
+      IpProtocol: tcp
+      FromPort: '636'
+      ToPort: '636'
+      CidrIp: !Ref VPCCIDR
+  sgpssharedawslinuxingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawslinux
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      SourceSecurityGroupId:
+        Ref: sgpsts
+  sgpssharedawslinuxegress1:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawslinux
+      IpProtocol: tcp
+      FromPort: '25'
+      ToPort: '25'
+      CidrIp: 0.0.0.0/0
+  sgpssharedawslinuxegress2:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawslinux
+      IpProtocol: tcp
+      FromPort: '465'
+      ToPort: '465'
+      CidrIp: 0.0.0.0/0
+  sgpssharedawslinuxegress3:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawslinux
+      IpProtocol: tcp
+      FromPort: '636'
+      ToPort: '636'
+      DestinationSecurityGroupId:
+        Ref: sgpsdc
+  sgpssharedawslinuxegress4:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawslinux
+      IpProtocol: udp
+      FromPort: '389'
+      ToPort: '389'
+      DestinationSecurityGroupId:
+        Ref: sgpsdc
+  sgpssharedawslinuxegress5:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawslinux
+      IpProtocol: udp
+      FromPort: '53'
+      ToPort: '53'
+      DestinationSecurityGroupId:
+        Ref: sgpsdc
+  sgpssharedawslinuxegress6:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawslinux
+      IpProtocol: tcp
+      FromPort: '587'
+      ToPort: '587'
+      CidrIp: 0.0.0.0/0
+  sgpssharedawslinuxegress7:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawslinux
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 174.129.20.144/32
+  sgpssharedawslinuxegress8:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawslinux
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 174.129.20.92/32
+  sgpssharedawslinuxegress9:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawslinux
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 54.239.0.0/16
+  sgpssharedawslinuxegress10:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawslinux
+      IpProtocol: tcp
+      FromPort: '123'
+      ToPort: '123'
+      DestinationSecurityGroupId:
+        Ref: sgpsdc
+  sgpssharedawslinuxegress11:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawslinux
+      IpProtocol: tcp
+      FromPort: '2049'
+      ToPort: '2049'
+      DestinationSecurityGroupId:
+        Ref: sgpsinstallmedialinux
+  sgpssharedawslinuxegress12:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawslinux
+      IpProtocol: tcp
+      FromPort: '2049'
+      ToPort: '2049'
+      DestinationSecurityGroupId:
+        Ref: sgpshomedirslinux
+  sgpssharedawslinuxegress13:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawslinux
+      IpProtocol: tcp
+      FromPort: '2049'
+      ToPort: '2049'
+      DestinationSecurityGroupId:
+        Ref: sgpsscriptslinux
+  sgpssharedawslinuxegress14:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        !Ref sgpssharedawslinux
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      DestinationPrefixListId:
+        !FindInMap [PrefixListIdMap, !Ref "AWS::Region", s3]
+  sgpssharedawslinuxegress15:               # To resolve EFS endpoint issue
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawslinux
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 52.94.0.0/16
+  sgpsscriptslinuxingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsscriptslinux
+      IpProtocol: tcp
+      FromPort: '2049'
+      ToPort: '2049'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawslinux
+  sgpssharedawswindowsingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawswindows
+      IpProtocol: tcp
+      FromPort: '3389'
+      ToPort: '3389'
+      SourceSecurityGroupId:
+        Ref: sgpsts
+  sgpstsingress1:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsts
+      IpProtocol: tcp
+      FromPort: '3389'
+      ToPort: '3389'
+      CidrIp: 172.21.0.0/16
+  sgpstsingress2:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsts
+      IpProtocol: tcp
+      FromPort: '3389'
+      ToPort: '3389'
+      CidrIp: 172.23.96.0/21
+  sgpstsingress3:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsts
+      IpProtocol: tcp
+      FromPort: '3389'
+      ToPort: '3389'
+      CidrIp: 172.24.96.0/21
+  sgpstsingress4:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsts
+      IpProtocol: tcp
+      FromPort: '3389'
+      ToPort: '3389'
+      CidrIp: 172.26.5.0/24
+  sgpstsingress5:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsts
+      IpProtocol: tcp
+      FromPort: '3389'
+      ToPort: '3389'
+      CidrIp: 10.32.0.0/11
+  sgpshomedirslinuxingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpshomedirslinux
+      IpProtocol: tcp
+      FromPort: '2049'
+      ToPort: '2049'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawslinux
+  sgpsinstallmedialinuxingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsinstallmedialinux
+      IpProtocol: tcp
+      FromPort: '2049'
+      ToPort: '2049'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawslinux
+  sgpsinstallmediawindowsingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsinstallmediawindows
+      IpProtocol: udp
+      FromPort: '137'
+      ToPort: '137'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsinstallmediawindowsingress2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsinstallmediawindows
+      IpProtocol: tcp
+      FromPort: '135'
+      ToPort: '139'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpsinstallmediawindowsingress3:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsinstallmediawindows
+      IpProtocol: tcp
+      FromPort: '445'
+      ToPort: '445'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpssftpnprdingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpssftpnprd
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawslinux
+  sgpssftpnprdingress2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpssftpnprd
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpssftpnprdingress3:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpssftpnprd
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      CidrIp: 10.32.0.0/11
+  sgpssftpnprdingress4:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpssftpnprd
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      CidrIp: 172.21.0.0/16
+  sgpssftpnprdingress5:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpssftpnprd
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      CidrIp: 172.24.96.0/21
+  sgpssftpnprdingress6:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpssftpnprd
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      CidrIp: 172.26.0.0/16
+  sgpssftpprodingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpssftpprod
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawslinux
+  sgpssftpprodingress2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpssftpprod
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      SourceSecurityGroupId:
+        Ref: sgpssharedawswindows
+  sgpssftpprodingress3:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpssftpprod
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      CidrIp: 10.32.0.0/11
+  sgpssftpprodingress4:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpssftpprod
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      CidrIp: 172.21.0.0/16
+  sgpssftpprodingress5:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpssftpprod
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      CidrIp: 172.24.96.0/21
+  sgpssftpprodingress6:
+    Condition: CMSConnection
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpssftpprod
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      CidrIp: 172.26.0.0/16
+  sgpsapptoolsnprdlinuxingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsapptoolsnprdlinux
+      IpProtocol: tcp
+      FromPort: '2049'
+      ToPort: '2049'
+      SourceSecurityGroupId:
+        Ref: sgpsadminnprdlinux
+  sgpsapptoolsprodlinuxingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsapptoolsprodlinux
+      IpProtocol: tcp
+      FromPort: '2049'
+      ToPort: '2049'
+      SourceSecurityGroupId:
+        Ref: sgpsadminprodlinux
+  sgpsesnprdingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsesnprd
+      IpProtocol: tcp
+      FromPort: '8080'
+      ToPort: '8080'
+      SourceSecurityGroupId:
+        Ref: sgpsts
+  sgpsesnprdingress2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsesnprd
+      IpProtocol: tcp
+      FromPort: '8080'
+      ToPort: '8080'
+      SourceSecurityGroupId:
+        Ref: sgpslbprivateesnprd
+  sgpsesnprdingress3:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsesnprd
+      IpProtocol: tcp
+      FromPort: '8443'
+      ToPort: '8443'
+      SourceSecurityGroupId:
+        Ref: sgpsts
+  sgpslbprivateesnprdingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpslbprivateesnprd
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      CidrIp: 0.0.0.0/0
+  sgpslbprivateesnprdingress2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpslbprivateesnprd
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 0.0.0.0/0
+  sgpsesprodingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsesprod
+      IpProtocol: tcp
+      FromPort: '8080'
+      ToPort: '8080'
+      SourceSecurityGroupId:
+        Ref: sgpsts
+  sgpsesprodingress2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsesprod
+      IpProtocol: tcp
+      FromPort: '8080'
+      ToPort: '8080'
+      SourceSecurityGroupId:
+        Ref: sgpslbprivateesprod
+  sgpsesprodingress3:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsesprod
+      IpProtocol: tcp
+      FromPort: '8443'
+      ToPort: '8443'
+      SourceSecurityGroupId:
+        Ref: sgpsts
+  sgpslbprivateesprodingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpslbprivateesprod
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      CidrIp: 0.0.0.0/0
+  sgpslbprivateesprodingress2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpslbprivateesprod
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 0.0.0.0/0
+  sgpswebgatewaynprdingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpswebgatewaynprd
+      IpProtocol: tcp
+      FromPort: '8080'
+      ToPort: '8080'
+      SourceSecurityGroupId:
+        Ref: sgpsts
+  sgpswebgatewaynprdingress2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpswebgatewaynprd
+      IpProtocol: tcp
+      FromPort: '8080'
+      ToPort: '8080'
+      SourceSecurityGroupId:
+        Ref: sgpslbpublicgatewaynprd
+  sgpswebgatewaynprdingress3:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpswebgatewaynprd
+      IpProtocol: tcp
+      FromPort: '8080'
+      ToPort: '8080'
+      SourceSecurityGroupId:
+        Ref: sgpslbprivategatewaynprd
+  sgpswebgatewayprodingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpswebgatewayprod
+      IpProtocol: tcp
+      FromPort: '8080'
+      ToPort: '8080'
+      SourceSecurityGroupId:
+        Ref: sgpsts
+  sgpswebgatewayprodingress2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpswebgatewayprod
+      IpProtocol: tcp
+      FromPort: '8080'
+      ToPort: '8080'
+      SourceSecurityGroupId:
+        Ref: sgpslbpublicgatewayprod
+  sgpswebgatewayprodingress3:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpswebgatewayprod
+      IpProtocol: tcp
+      FromPort: '8080'
+      ToPort: '8080'
+      SourceSecurityGroupId:
+        Ref: sgpslbprivategatewayprod
+  sgpsapptoolsnprdwindowsingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsapptoolsnprdwindows
+      IpProtocol: udp
+      FromPort: '137'
+      ToPort: '137'
+      SourceSecurityGroupId:
+        Ref: sgpsts
+  sgpsapptoolsnprdwindowsingress2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsapptoolsnprdwindows
+      IpProtocol: tcp
+      FromPort: '135'
+      ToPort: '139'
+      SourceSecurityGroupId:
+        Ref: sgpsts
+  sgpsapptoolsnprdwindowsingress3:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsapptoolsnprdwindows
+      IpProtocol: tcp
+      FromPort: '445'
+      ToPort: '445'
+      SourceSecurityGroupId:
+        Ref: sgpsts
+  sgpsapptoolsprodwindowsingress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsapptoolsprodwindows
+      IpProtocol: udp
+      FromPort: '445'
+      ToPort: '445'
+      SourceSecurityGroupId:
+        Ref: sgpsts
+  sgpsapptoolsprodwindowsingress2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsapptoolsprodwindows
+      IpProtocol: tcp
+      FromPort: '135'
+      ToPort: '139'
+      SourceSecurityGroupId:
+        Ref: sgpsts
+  sgpsapptoolsprodwindowsingress3:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sgpsapptoolsprodwindows
+      IpProtocol: tcp
+      FromPort: '445'
+      ToPort: '445'
+      SourceSecurityGroupId:
+        Ref: sgpsts
+  sgpssftpnprdegress1:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssftpnprd
+      IpProtocol: tcp
+      FromPort: '2049'
+      ToPort: '2049'
+      DestinationSecurityGroupId:
+        Ref: sgpsapptoolsnprdlinux
+  sgpssftpprodegress1:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssftpprod
+      IpProtocol: tcp
+      FromPort: '2049'
+      ToPort: '2049'
+      DestinationSecurityGroupId:
+        Ref: sgpsapptoolsprodlinux
+  sgpslbprivategatewaynprdegress1:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpslbprivategatewaynprd
+      IpProtocol: tcp
+      FromPort: '8080'
+      ToPort: '8080'
+      DestinationSecurityGroupId:
+        Ref: sgpswebgatewaynprd
+  sgpslbprivategatewayprodegress1:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpslbprivategatewayprod
+      IpProtocol: tcp
+      FromPort: '8080'
+      ToPort: '8080'
+      DestinationSecurityGroupId:
+        Ref: sgpswebgatewayprod
+  sgpssharedawswindowsegress1:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawswindows
+      IpProtocol: udp
+      FromPort: '389'
+      ToPort: '389'
+      DestinationSecurityGroupId:
+        Ref: sgpsdc
+  sgpssharedawswindowsegress2:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawswindows
+      IpProtocol: udp
+      FromPort: '53'
+      ToPort: '53'
+      DestinationSecurityGroupId:
+        Ref: sgpsdc
+  sgpssharedawswindowsegress3:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawswindows
+      IpProtocol: tcp
+      FromPort: '445'
+      ToPort: '445'
+      DestinationSecurityGroupId:
+        Ref: sgpsdc
+  sgpssharedawswindowsegress4:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawswindows
+      IpProtocol: tcp
+      FromPort: '9389'
+      ToPort: '9389'
+      DestinationSecurityGroupId:
+        Ref: sgpsdc
+  sgpssharedawswindowsegress5:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawswindows
+      IpProtocol: tcp
+      FromPort: '123'
+      ToPort: '123'
+      DestinationSecurityGroupId:
+        Ref: sgpsdc
+  sgpssharedawswindowsegress6:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawswindows
+      IpProtocol: tcp
+      FromPort: '3268'
+      ToPort: '3269'
+      DestinationSecurityGroupId:
+        Ref: sgpsdc
+  sgpssharedawswindowsegress7:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawswindows
+      IpProtocol: tcp
+      FromPort: '88'
+      ToPort: '88'
+      DestinationSecurityGroupId:
+        Ref: sgpsdc
+  sgpssharedawswindowsegress8:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawswindows
+      IpProtocol: tcp
+      FromPort: '49154'
+      ToPort: '49159'
+      DestinationSecurityGroupId:
+        Ref: sgpsdc
+  sgpssharedawswindowsegress9:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawswindows
+      IpProtocol: udp
+      FromPort: '137'
+      ToPort: '137'
+      DestinationSecurityGroupId:
+        Ref: sgpsdc
+  sgpssharedawswindowsegress10:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawswindows
+      IpProtocol: tcp
+      FromPort: '135'
+      ToPort: '139'
+      DestinationSecurityGroupId:
+        Ref: sgpsdc
+  sgpssharedawswindowsegress11:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawswindows
+      IpProtocol: tcp
+      FromPort: '636'
+      ToPort: '636'
+      DestinationSecurityGroupId:
+        Ref: sgpsdc
+  sgpssharedawswindowsegress12:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawswindows
+      IpProtocol: tcp
+      FromPort: '135'
+      ToPort: '139'
+      DestinationSecurityGroupId:
+        Ref: sgpsinstallmediawindows
+  sgpssharedawswindowsegress13:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawswindows
+      IpProtocol: udp
+      FromPort: '137'
+      ToPort: '137'
+      DestinationSecurityGroupId:
+        Ref: sgpsinstallmediawindows
+  sgpssharedawswindowsegress14:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawswindows
+      IpProtocol: tcp
+      FromPort: '445'
+      ToPort: '445'
+      DestinationSecurityGroupId:
+        Ref: sgpsinstallmediawindows
+  sgpssharedawswindowsegress15:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpssharedawswindows
+      IpProtocol: tcp
+      FromPort: '464'
+      ToPort: '464'
+      DestinationSecurityGroupId:
+        Ref: sgpsdc
+  sgpssharedawswindowsegress16:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        !Ref sgpssharedawswindows
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      DestinationPrefixListId:
+        !FindInMap [PrefixListIdMap, !Ref "AWS::Region", s3]
+  sgpsesnprdegress1:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsesnprd
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      DestinationSecurityGroupId:
+        Ref: sgpslbprivategatewaynprd
+  sgpsesnprdegress2:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsesnprd
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      DestinationSecurityGroupId:
+        Ref: sgpslbprivategatewaynprd
+  sgpslbprivateesnprdegress1:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpslbprivateesnprd
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      DestinationSecurityGroupId:
+        Ref: sgpslbprivategatewaynprd
+  sgpsesprodegress1:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsesprod
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      DestinationSecurityGroupId:
+        Ref: sgpslbprivategatewayprod
+  sgpsesprodegress2:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsesprod
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      DestinationSecurityGroupId:
+        Ref: sgpslbprivategatewayprod
+  sgpslbprivateesprodegress1:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpslbprivateesprod
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      DestinationSecurityGroupId:
+        Ref: sgpslbprivategatewayprod
+  sgpslbpublicgatewaynprdegress1:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpslbpublicgatewaynprd
+      IpProtocol: tcp
+      FromPort: '8080'
+      ToPort: '8080'
+      DestinationSecurityGroupId:
+        Ref: sgpswebgatewaynprd
+  sgpslbpublicgatewayprodegress1:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpslbpublicgatewayprod
+      IpProtocol: tcp
+      FromPort: '8080'
+      ToPort: '8080'
+      DestinationSecurityGroupId:
+        Ref: sgpswebgatewayprod
+  sgpsadminnprdlinuxegress1:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsadminnprdlinux
+      IpProtocol: tcp
+      FromPort: '2049'
+      ToPort: '2049'
+      DestinationSecurityGroupId:
+        Ref: sgpsapptoolsnprdlinux
+  sgpsadminprodlinuxegress1:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sgpsadminprodlinux
+      IpProtocol: tcp
+      FromPort: '2049'
+      ToPort: '2049'
+      DestinationSecurityGroupId:
+        Ref: sgpsapptoolsprodlinux
+
+Outputs:
+  Stacksgpsdc:
+    Description: The ID of security group sgpsdc
+    Value: !Ref sgpsdc
+    Export:
+      Name: sgpsdc
+  Stacksgpssharedawslinux:
+    Description: The ID of security group sgpssharedawslinux
+    Value: !Ref sgpssharedawslinux
+    Export:
+      Name: sgpssharedawslinux
+  Stacksgpssharedcmslinux:
+    Condition: CMSConnection
+    Description: The ID of security group sgpssharedcmslinux
+    Value: !Ref sgpssharedcmslinux
+    Export:
+      Name: sgpssharedcmslinux
+  Stacksgpsscriptslinux:
+    Description: The ID of security group sgpsscriptslinux
+    Value: !Ref sgpsscriptslinux
+    Export:
+      Name: sgpsscriptslinux
+  Stacksgpssharedawswindows:
+    Description: The ID of security group sgpssharedawswindows
+    Value: !Ref sgpssharedawswindows
+    Export:
+      Name: sgpssharedawswindows
+  Stacksgpssharedcmswindows:
+    Condition: CMSConnection
+    Description: The ID of security group sgpssharedcmswindows
+    Value: !Ref sgpssharedcmswindows
+    Export:
+      Name: sgpssharedcmswindows
+  Stacksgpsadminnprdlinux:
+    Description: The ID of security group sgpsadminnprdlinux
+    Value: !Ref sgpsadminnprdlinux
+    Export:
+      Name: sgpsadminnprdlinux
+  Stacksgpsadminprodlinux:
+    Description: The ID of security group sgpsadminprodlinux
+    Value: !Ref sgpsadminprodlinux
+    Export:
+      Name: sgpsadminprodlinux
+  Stacksgpsadminwindows:
+    Description: The ID of security group sgpsadminwindows
+    Value: !Ref sgpsadminwindows
+    Export:
+      Name: sgpsadminwindows
+  Stacksgpsts:
+    Description: The ID of security group sgpsts
+    Value: !Ref sgpsts
+    Export:
+      Name: sgpsts
+  Stacksgpshomedirslinux:
+    Description: The ID of security group sgpshomedirslinux
+    Value: !Ref sgpshomedirslinux
+    Export:
+      Name: sgpshomedirslinux
+  Stacksgpsinstallmedialinux:
+    Description: The ID of security group sgpsinstallmedialinux
+    Value: !Ref sgpsinstallmedialinux
+    Export:
+      Name: sgpsinstallmedialinux
+  Stacksgpsinstallmediawindows:
+    Description: The ID of security group sgpsinstallmediawindows
+    Value: !Ref sgpsinstallmediawindows
+    Export:
+      Name: sgpsinstallmediawindows
+  Stacksgpssftpnprd:
+    Description: The ID of security group sgpssftpnprd
+    Value: !Ref sgpssftpnprd
+    Export:
+      Name: sgpssftpnprd
+  Stacksgpssftpprod:
+    Description: The ID of security group sgpssftpprod
+    Value: !Ref sgpssftpprod
+    Export:
+      Name: sgpssftpprod
+  Stacksgpsapptoolsnprdlinux:
+    Description: The ID of security group sgpsapptoolsnprdlinux
+    Value: !Ref sgpsapptoolsnprdlinux
+    Export:
+      Name: sgpsapptoolsnprdlinux
+  Stacksgpsapptoolsprodlinux:
+    Description: The ID of security group sgpsapptoolsprodlinux
+    Value: !Ref sgpsapptoolsprodlinux
+    Export:
+      Name: sgpsapptoolsprodlinux
+  Stacksgpsapptoolsnprdwindows:
+    Description: The ID of security group sgpsapptoolsnprdwindows
+    Value: !Ref sgpsapptoolsnprdwindows
+    Export:
+      Name: sgpsapptoolsnprdwindows
+  Stacksgpsapptoolsprodwindows:
+    Description: The ID of security group sgpsapptoolsprodwindows
+    Value: !Ref sgpsapptoolsprodwindows
+    Export:
+      Name: sgpsapptoolsprodwindows
+  Stacksgpswebgatewaynprd:
+    Description: The ID of security group sgpswebgatewaynprd
+    Value: !Ref sgpswebgatewaynprd
+    Export:
+      Name: sgpswebgatewaynprd
+  Stacksgpslbprivategatewaynprd:
+    Description: The ID of security group sgpslbprivategatewaynprd
+    Value: !Ref sgpslbprivategatewaynprd
+    Export:
+      Name: sgpslbprivategatewaynprd
+  Stacksgpslbpublicgatewaynprd:
+    Description: The ID of security group sgpslbpublicgatewaynprd
+    Value: !Ref sgpslbpublicgatewaynprd
+    Export:
+      Name: sgpslbpublicgatewaynprd
+  Stacksgpswebgatewayprod:
+    Description: The ID of security group sgpswebgatewayprod
+    Value: !Ref sgpswebgatewayprod
+    Export:
+      Name: sgpswebgatewayprod
+  Stacksgpslbprivategatewayprod:
+    Description: The ID of security group sgpslbprivategatewayprod
+    Value: !Ref sgpslbprivategatewayprod
+    Export:
+      Name: sgpslbprivategatewayprod
+  Stacksgpslbpublicgatewayprod:
+    Description: The ID of security group sgpslbpublicgatewayprod
+    Value: !Ref sgpslbpublicgatewayprod
+    Export:
+      Name: sgpslbpublicgatewayprod
+  Stacksgpsesnprd:
+    Description: The ID of security group sgpsesnprd
+    Value: !Ref sgpsesnprd
+    Export:
+      Name: sgpsesnprd
+  Stacksgpslbprivateesnprd:
+    Description: The ID of security group sgpslbprivateesnprd
+    Value: !Ref sgpslbprivateesnprd
+    Export:
+      Name: sgpslbprivateesnprd
+  Stacksgpsesprod:
+    Description: The ID of security group sgpsesprod
+    Value: !Ref sgpsesprod
+    Export:
+      Name: sgpsesprod
+  Stacksgpslbprivateesprod:
+    Description: The ID of security group sgpslbprivateesprod
+    Value: !Ref sgpslbprivateesprod
+    Export:
+      Name: sgpslbprivateesprod
+  StackCMSConnectivity:
+    Description: CMSConnectivity is Required/NotRequired
+    Value: !Ref CMSConnectivity
+    Export:
+      Name: CMSConnectivity
